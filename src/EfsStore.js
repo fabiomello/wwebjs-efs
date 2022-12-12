@@ -1,12 +1,7 @@
 const fs = require("fs");
 
 class EfsStore {
-  constructor() {
-    const _cpOptions = {
-      recursive: true,
-      overwrite: true,
-    };
-  }
+  constructor() {}
 
   async sessionExists(options) {
     let hasExistingSession = await fs.existsSync(
@@ -22,7 +17,10 @@ class EfsStore {
     fs.cpSync(
       `${process.env.DATA_PATH || "/tmp/session"}`,
       `${process.env.EFS_PATH}/session-${options.session}`,
-      _cpOptions
+      {
+        recursive: true,
+        overwrite: true,
+      }
     );
   }
 
@@ -30,7 +28,10 @@ class EfsStore {
     fs.cpSync(
       `${process.env.EFS_PATH}/session-${options.session}`,
       `${process.env.DATA_PATH || "/tmp/session"}`,
-      _cpOptions
+      {
+        recursive: true,
+        overwrite: true,
+      }
     );
   }
 
