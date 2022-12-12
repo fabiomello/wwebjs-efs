@@ -1,1 +1,1 @@
-export const MongoStore: typeof import("./src/MongoStore");
+export const EfsStore: typeof import("./src/EfsStore");
