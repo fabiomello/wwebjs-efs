@@ -2,7 +2,6 @@ const fs = require("fs");
 
 class EfsStore {
   constructor() {
-    const _dir = `${process.env.EFS_PATH}/session-${options.session}`;
     const _cpOptions = {
       recursive: true,
       overwrite: true,
@@ -18,11 +17,19 @@ class EfsStore {
   }
 
   async save(options) {
-    fs.cpSync(`${process.env.DATA_PATH || "/tmp/session"}`, _dir, _cpOptions);
+    fs.cpSync(
+      `${process.env.DATA_PATH || "/tmp/session"}`,
+      `${process.env.EFS_PATH}/session-${options.session}`,
+      _cpOptions
+    );
   }
 
   async extract(options) {
-    fs.cpSync(_dir, `${process.env.DATA_PATH || "/tmp/session"}`, _cpOptions);
+    fs.cpSync(
+      `${process.env.EFS_PATH}/session-${options.session}`,
+      `${process.env.DATA_PATH || "/tmp/session"}`,
+      _cpOptions
+    );
   }
 
   async delete(options) {
