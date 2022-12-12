@@ -9,9 +9,11 @@ class EfsStore {
   }
 
   async sessionExists(options) {
-    let hasExistingSession = await fs.existsSync(_dir);
+    let hasExistingSession = await fs.existsSync(
+      `${process.env.EFS_PATH}/session-${options.session}`
+    );
     if (!hasExistingSession) {
-      fs.mkdirSync(_dir);
+      fs.mkdirSync(`${process.env.EFS_PATH}/session-${options.session}`);
     }
     return !!hasExistingSession;
   }
