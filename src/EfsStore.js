@@ -5,40 +5,44 @@ class EfsStore {
 
   async sessionExists(options) {
     let hasExistingSession = await fs.existsSync(
-      `${process.env.EFS_PATH}/session-${options.session}`
+      path
+        .join(process.env.EFS_PATH, `${options.session}.zip`)
+        .replace(/\\/g, "/")
     );
-    if (!hasExistingSession) {
-      fs.mkdirSync(`${process.env.EFS_PATH}/session-${options.session}`);
-    }
     return !!hasExistingSession;
   }
 
   async save(options) {
-    fs.cpSync(
-      `${process.env.DATA_PATH || "/tmp/session"}`,
-      `${process.env.EFS_PATH}/session-${options.session}`,
-      {
-        recursive: true,
-        overwrite: true,
-      }
-    );
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(`${options.session}.zip`)
+        .pipe(
+          fs.createWriteStream(
+            path.join(process.env.EFS_PATH, `${options.session}.zip`)
+          )
+        )
+        .on("error", (err) => reject(err))
+        .on("close", () => resolve());
+    });
   }
 
   async extract(options) {
-    fs.cpSync(
-      `${process.env.EFS_PATH}/session-${options.session}`,
-      `${process.env.DATA_PATH || "/tmp/session"}`,
-      {
-        recursive: true,
-        overwrite: true,
-      }
-    );
+    var zipPipe = new Promise((resolve, reject) => {
+      fs.createReadStream(
+        path.join(process.env.EFS_PATH, `${options.session}.zip`)
+      )
+        .pipe(fs.createWriteStream(options.path))
+        .on("error", (err) => reject(err))
+        .on("close", () => resolve());
+    });
+    return zipPipe;
   }
 
   async delete(options) {
-    fs.rmdirSync(`${process.env.EFS_PATH}/session-${options.session}`, {
-      recursive: true,
-    });
+    fs.rmSync(
+      path
+        .join(process.env.EFS_PATH, `${options.session}.zip`)
+        .replace(/\\/g, "/")
+    );
   }
 }
 
