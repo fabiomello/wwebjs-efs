@@ -14,40 +14,36 @@ class EfsStore {
   }
 
   async save(options) {
-    try {
-      await new Promise((resolve, reject) => {
-        fs.createReadStream(`${options.session}.zip`)
-          .pipe(
-            fs.createWriteStream(
-              path.join(process.env.EFS_PATH, `${options.session}.zip`)
-            )
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(`${options.session}.zip`)
+        .pipe(
+          fs.createWriteStream(
+            path.join(process.env.EFS_PATH, `${options.session}.zip`)
           )
-          .on("error", (err) => reject(err))
-          .on("close", () => resolve());
-      });
-    } catch (err) {
-      console.log("Error saving zip", err);
-    }
+        )
+        .on("error", (err) => reject(err))
+        .on("close", () => resolve());
+    });
   }
 
   async extract(options) {
-    try {
-      return new Promise((resolve, reject) => {
-        fs.createReadStream(
-          path.join(process.env.EFS_PATH, `${options.session}.zip`)
-        )
-          .pipe(fs.createWriteStream(options.path))
-          .on("error", (err) => reject(err))
-          .on("close", () => resolve());
-      });
-    } catch (err) {
-      console.log("Error extracting zip", err);
-      return undefined;
-    }
+    var zipPipe = new Promise((resolve, reject) => {
+      fs.createReadStream(
+        path.join(process.env.EFS_PATH, `${options.session}.zip`)
+      )
+        .pipe(fs.createWriteStream(options.path))
+        .on("error", (err) => reject(err))
+        .on("close", () => resolve());
+    });
+    return zipPipe;
   }
 
   async delete(options) {
-    fs.rmSync(path.join(process.env.EFS_PATH, `${options.session}.zip`));
+    fs.rmSync(
+      path
+        .join(process.env.EFS_PATH, `${options.session}.zip`)
+        .replace(/\\/g, "/")
+    );
   }
 }
 
