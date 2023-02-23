@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-
+const decompress = require("decompress");
 class EfsStore {
   constructor() {}
 
@@ -31,12 +31,9 @@ class EfsStore {
     console.log("Extracting session");
     var zipPipe = new Promise((resolve, reject) => {
       try {
-        fs.createReadStream(
-          path.join(process.env.EFS_PATH, `${options.session}.zip`)
-        )
-          .pipe(fs.createWriteStream(options.path))
-          .on("error", (err) => reject(err))
-          .on("close", () => resolve());
+        decompress(`${options.session}.zip`, process.env.EFS_PATH).then(() => {
+          resolve();
+        });
       } catch {
         reject();
       }

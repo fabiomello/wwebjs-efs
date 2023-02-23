@@ -16,5 +16,8 @@
     "whatsapp-web.js"
   ],
   "author": "Fábio Mello",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "decompress": "^4.2.1"
+  }
 }
