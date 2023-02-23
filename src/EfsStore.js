@@ -14,6 +14,7 @@ class EfsStore {
   }
 
   async save(options) {
+    console.log("Saving session");
     await new Promise((resolve, reject) => {
       fs.createReadStream(`${options.session}.zip`)
         .pipe(
@@ -27,13 +28,18 @@ class EfsStore {
   }
 
   async extract(options) {
+    console.log("Extracting session");
     var zipPipe = new Promise((resolve, reject) => {
-      fs.createReadStream(
-        path.join(process.env.EFS_PATH, `${options.session}.zip`)
-      )
-        .pipe(fs.createWriteStream(options.path))
-        .on("error", (err) => reject(err))
-        .on("close", () => resolve());
+      try {
+        fs.createReadStream(
+          path.join(process.env.EFS_PATH, `${options.session}.zip`)
+        )
+          .pipe(fs.createWriteStream(options.path))
+          .on("error", (err) => reject(err))
+          .on("close", () => resolve());
+      } catch {
+        reject();
+      }
     });
     return zipPipe;
   }
