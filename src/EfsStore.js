@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
-const decompress = require("decompress");
+const { Parse } = require("unzipper");
+
 class EfsStore {
   constructor() {}
 
@@ -16,29 +17,37 @@ class EfsStore {
   async save(options) {
     console.log("Saving session");
     await new Promise((resolve, reject) => {
-      fs.createReadStream(`${options.session}.zip`)
-        .pipe(
-          fs.createWriteStream(
-            path.join(process.env.EFS_PATH, `${options.session}.zip`)
-          )
+      try {
+        fs.createReadStream(
+          path
+            .join(process.env.EFS_PATH, `${options.session}.zip`)
+            .replace(/\\/g, "/")
         )
-        .on("error", (err) => reject(err))
-        .on("close", () => resolve());
+          .pipe(fs.createWriteStream(process.env.DATA_PATH))
+          .on("error", (err) => reject(err))
+          .on("close", () => resolve());
+      } catch {
+        reject();
+      }
     });
   }
 
   async extract(options) {
     console.log("Extracting session");
-    var zipPipe = new Promise((resolve, reject) => {
-      try {
-        decompress(`${options.session}.zip`, process.env.EFS_PATH).then(() => {
-          resolve();
-        });
-      } catch {
-        reject();
-      }
+    const stream = createReadStream(
+      path
+        .join(process.env.EFS_PATH, `${options.session}.zip`)
+        .replace(/\\/g, "/")
+    ).pipe(Parse());
+
+    return new Promise((resolve, reject) => {
+      stream.on("entry", (entry) => {
+        const writeStream = createWriteStream(process.env.DATA_PATH);
+        return entry.pipe(writeStream);
+      });
+      stream.on("finish", () => resolve());
+      stream.on("error", (error) => reject(error));
     });
-    return zipPipe;
   }
 
   async delete(options) {
